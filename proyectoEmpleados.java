@@ -2172,3 +2172,137 @@ INSERT INTO empleado (nombre, departamento, puesto, correo, telefono, extension,
 	
 SELECT * FROM empleado;
 
+
+
+
+
+//CAMBIARIA HTML EN JQUERY
+
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Buscar empleados</title>
+    <!-- Importamos los estilos de Bootstrap -->
+	  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+    <style>
+
+        #imgn{
+	      	width: 209px;
+	      	height: 350px;
+		float: left;
+		object-fit: cover;
+		transition: .2s;
+		border-radius: 5px 5px;
+        	padding-right: 15px;
+          	padding-bottom: 20px;
+				}
+
+    </style>
+    
+  </head>
+  <body>
+    <div class="container">
+      <h1>Buscar empleados</h1>
+      <form id="search-form">
+        <div class="form-group">
+          <label for="search-type">Buscar por:</label>
+          <select class="form-control" id="search-type">
+            <option value="name">Nombre</option>
+            <option value="position">Puesto</option>
+            <option value="department">Departamento</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="search-term">Término de búsqueda:</label>
+          <input type="text" class="form-control" id="search-term" />
+        </div>
+        <button type="submit" class="btn btn-primary">Buscar</button>
+      </form>
+      <br>
+      <div id="search-results"></div>
+    </div>
+
+    <!-- Importamos el script de jQuery y el de Bootstrap -->
+	<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+	<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNSzN9W" crossorigin="anonymous"></script> -->
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+
+    <script>
+        $(document).ready(function () {
+          $("#search-form").submit(function (event) {
+            // Prevenimos el comportamiento por defecto del formulario
+            event.preventDefault();
+
+            // Obtenemos el tipo de búsqueda seleccionado y el término de búsqueda
+            const searchType = $("#search-type").val();
+            const searchTerm = $("#search-term").val();
+
+            // Construimos la URL del endpoint correspondiente
+            let url;
+            if (searchType === "name") {
+              url = "http://localhost:9876/api/empleados/nombre/" + searchTerm;
+            } else if (searchType === "position") {
+              url = "http://localhost:9876/api/empleados/puesto/" + searchTerm;
+            } else if (searchType === "department") {
+              url = "http://localhost:9876/api/empleados/departamento/" + searchTerm;
+            }
+
+            // Hacemos la petición GET al endpoint correspondiente
+            fetch(url)
+              .then(response => response.json())
+              .then(data => {
+
+                // Limpiamos los resultados anteriores
+                $("#search-results").empty();
+
+                // Si la respuesta es un array vacío, mostramos un mensaje
+                if (data.length === 0) {
+                  $("#search-results").append(
+                    '<div class="alert alert-warning" role="alert">No se encontraron resultados para la búsqueda realizada.</div>'
+                  );
+                } else {
+                  // Si la respuesta tiene datos, creamos una tabla con los resultados
+                  
+                  data.forEach(function (employee) {
+                    const card = $("<div class='col-md-6' style='float:left;'><div class='card'></div></div>");
+                    const image = $("<img id='imgn' class='card-img-top' src='" + employee.imagen + "' alt='Foto de " + employee.nombre + "'>");
+                    const cardBody = $("<div class='card-body'></div>");
+                    const name = $("<h5 class='card-title'>" + employee.nombre + "</h5>");
+                    const position = $("<p class='card-text'>Puesto: " + employee.puesto + "</p>");
+                    const department = $("<p class='card-text'>Departamento: " + employee.departamento + "</p>");
+                    const email = $("<p class='card-text'>Correo: " + employee.correo + "</p>");
+                    const phone = $("<p class='card-text'>Teléfono: " + employee.telefono + "</p>");
+                    const extension = $("<p class='card-text'>Extensión: " + employee.extension + "</p>");
+                    const salary = $("<p class='card-text'>Sueldo: " + employee.sueldo + "</p>");
+
+                    // Agregamos los elementos creados al contenedor cardBody
+                    cardBody.append(name, position, department, email, phone, extension, salary);
+
+                    // Agregamos la imagen y el contenedor cardBody al contenedor card
+                    card.append(image, cardBody);
+
+                    // Agregamos la tarjeta al contenedor search-results
+                    $("#search-results").append(card);
+                  });
+
+                }
+              })
+              .catch(error => {
+                console.error(error);
+                // Mostramos un mensaje de error
+                $("#search-results").empty().append(
+                  '<div class="alert alert-danger" role="alert">Ha ocurrido un error al realizar la búsqueda.</div>'
+                );
+              });
+          });
+        });
+        
+
+    </script>
+  </body>
+</html>
+
+
